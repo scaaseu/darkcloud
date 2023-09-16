@@ -10,10 +10,10 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - darkcloud
-    restart: always  
     
   # IDS to scan docker images and file shares for malware
   ids:
+    container_name: yara_hunter
     image: deepfenceio/yara-hunter:latest
     ulimits:
       core: 1
@@ -21,7 +21,6 @@ services:
       - whitecloud      
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    restart: always
     entrypoint: /home/deepfence/usr/YaRadare
     command: ["-config-path","/home/deepfence/usr", "-standalone-http-port", "8011"]
     logging:
@@ -31,29 +30,31 @@ services:
         
   # customized Kali Linux as SOC
   soc:
+    container_name: soc
     image: darkcloud-soc
     build: ./nextcloud/soc
     stdin_open: true
     tty: true    
     networks:
-      - whitecloud  
-    restart: always   
+      - whitecloud 
+    volumes:
+      - soc_data:/root/data
     
   # hidden nextcloud service
   nextcloud:
     image: nextcloud:apache
     environment:
-      - ONIONSERVICE_NAME=nextcloud
+      - ONIONSERVICE_NAME=winter_is_coming
     networks:
       - darkcloud
     depends_on:
       - db
     volumes:
-      - nextcloud:/var/www/html
-      - ./nextcloud/volumes/config:/var/www/html/config
-      - ./nextcloud/volumes/custom_apps:/var/www/html/custom_apps
-      - ./nextcloud/volumes/data:/var/www/html/data
-      - ./nextcloud/volumes/themes:/var/www/html/themes
+      - nextcloud_public:/var/www/html
+      - nextcloud_config:/var/www/html/config
+      - nextcloud_custom_apps:/var/www/html/custom_apps
+      - nextcloud_data:/var/www/html/data
+      - nextcloud_themes:/var/www/html/themes
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
     
@@ -73,11 +74,25 @@ services:
     restart: unless-stopped
     
 volumes:
-  nextcloud:
+  nextcloud_public:
+    name: nextcloud_public
+  nextcloud_config:
+    name: nextcloud_config
+  nextcloud_custom_apps:
+    name: nextcloud_custom_apps
+  nextcloud_data:
+    name: nextcloud_data
+  nextcloud_themes:
+    name: nextcloud_themes    
   db:
+    name: db
+  soc_data:
+    name: soc_data
   
 networks:
   darkcloud:
+    name: darkcloud
     driver: bridge
   whitecloud:
+    name: whitecloud
     driver: bridge

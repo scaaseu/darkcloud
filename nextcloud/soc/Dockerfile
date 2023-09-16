@@ -2,11 +2,13 @@ FROM kalilinux/kali-rolling
 
 WORKDIR /root
 
+RUN mkdir -p /root/data
+
 # Update
 RUN apt -y update && DEBIAN_FRONTEND=noninteractive apt -y dist-upgrade && apt -y autoremove && apt clean
 
 # Install common and useful tools
-RUN apt -y install curl wget vim git net-tools whois netcat-traditional pciutils usbutils
+RUN apt -y install curl wget vim git net-tools whois netcat-traditional pciutils usbutils dos2unix gdebi
 
 # Install useful languages
 RUN apt -y install python3-pip golang nodejs npm
