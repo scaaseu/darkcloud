@@ -15,7 +15,7 @@ services:
     container_name: darkcloud-ids
     image: deepfenceio/yara-hunter:latest
     environment:
-      - ONIONSERVICE_NAME=darkcloud-ids   
+      - ONIONSERVICE_NAME=ids   
     ulimits:
       core: 1
     networks:
@@ -35,7 +35,7 @@ services:
     image: darkcloud-soc
     build: ./darkcloud/soc
     environment:
-      - ONIONSERVICE_NAME=darkcloud-soc    
+      - ONIONSERVICE_NAME=soc    
     stdin_open: true
     tty: true    
     networks:
@@ -62,7 +62,7 @@ services:
     container_name: darkcloud-db  
     image: mariadb
     environment:
-      - ONIONSERVICE_NAME=darkcloud-db    
+      - ONIONSERVICE_NAME=db    
     networks:
       - darkcloud
     volumes:
