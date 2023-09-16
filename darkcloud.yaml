@@ -3,7 +3,7 @@ version: '3'
 services:
   # docker-gen identifies by reading the environment variable ONIONSERVICE_NAME   
   # what services should be added to the list of hidden onion services in torrc
-  darkcloud-onionize:
+  onionize:
     container_name: darkcloud-onionize
     image: torservers/onionize
     volumes:
@@ -11,7 +11,7 @@ services:
     networks:
       - darkcloud
   # hidden IDS to scan docker images and file shares for malware
-  darkcloud-ids:
+  ids:
     container_name: darkcloud-ids
     image: deepfenceio/yara-hunter:latest
     environment:
@@ -30,7 +30,7 @@ services:
       options:
         max-size: "1g"
   # use hidden customized Kali Linux as SOC
-  darkcloud-soc:
+  soc:
     container_name: darkcloud-soc  
     image: darkcloud-soc
     build: ./darkcloud/soc
@@ -41,16 +41,17 @@ services:
     networks:
       - darkcloud    
   # hidden nextcloud service
-  darkcloud:
+  nextcloud:
+    container_name: darkcloud-nextcloud  
     image: nextcloud:apache
     environment:
-      - ONIONSERVICE_NAME=darkcloud
+      - ONIONSERVICE_NAME=cloud
     networks:
       - darkcloud
     depends_on:
-      - darkcloud-db
+      - nextcloud-db
     volumes:
-      - darkcloud-data:/var/www/html
+      - nextcloud-data:/var/www/html
       - ./darkcloud/volumes/config:/var/www/html/config
       - ./darkcloud/volumes/custom_apps:/var/www/html/custom_apps
       - ./darkcloud/volumes/data:/var/www/html/data
@@ -58,15 +59,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
   # hidden nextcloud database
-  darkcloud-db:
-    container_name: darkcloud-db  
+  nextcloud-db:
+    container_name: nextcloud-db  
     image: mariadb
     environment:
-      - ONIONSERVICE_NAME=db    
+      - ONIONSERVICE_NAME=database    
     networks:
       - darkcloud
     volumes:
-      - darkcloud-db:/var/lib/mysql
+      - nextcloud-db:/var/lib/mysql
       - /etc/localtime:/etc/localtime:ro
     environment:
       - MYSQL_ROOT_PASSWORD=password
@@ -75,8 +76,8 @@ services:
       - MYSQL_USER=nextcloud
     restart: unless-stopped
 volumes:
-  darkcloud-data:
-  darkcloud-db:
+  nextcloud-data:
+  nextcloud-db:
 networks:
   darkcloud:
     driver: bridge
