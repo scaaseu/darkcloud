@@ -1,4 +1,4 @@
 #!/bin/bash
 
 echo hidden address of darkcloud service
-docker exec darkcloud-onionize cat /var/lib/tor/onion_services/cloud/hostname
+docker exec darkcloud-onionize cat /var/lib/tor/onion_services/nextcloud/hostname

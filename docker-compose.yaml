@@ -4,23 +4,20 @@ services:
   # docker-gen identifies by reading the environment variable ONIONSERVICE_NAME   
   # what services should be added to the list of hidden onion services in torrc
   onionize:
-    container_name: darkcloud-onionize
     image: torservers/onionize
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - darkcloud
     restart: always  
+    
   # IDS to scan docker images and file shares for malware
   ids:
-    container_name: darkcloud-ids
     image: deepfenceio/yara-hunter:latest
-    environment:
-      - ONIONSERVICE_NAME=cloud    
     ulimits:
       core: 1
     networks:
-      - darkcloud      
+      - whitecloud      
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     restart: always
@@ -30,46 +27,42 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
+        
   # customized Kali Linux as SOC
   soc:
-    container_name: darkcloud-soc  
     image: darkcloud-soc
-    build: ./darkcloud/soc
-    environment:
-      - ONIONSERVICE_NAME=cloud    
+    build: ./nextcloud/soc
     stdin_open: true
     tty: true    
     networks:
-      - darkcloud  
-    restart: always      
+      - whitecloud  
+    restart: always   
+    
   # hidden nextcloud service
   nextcloud:
-    container_name: darkcloud-nextcloud  
     image: nextcloud:apache
     environment:
-      - ONIONSERVICE_NAME=cloud
+      - ONIONSERVICE_NAME=nextcloud
     networks:
       - darkcloud
     depends_on:
-      - nextcloud-db
+      - db
     volumes:
-      - nextcloud-data:/var/www/html
-      - ./darkcloud/volumes/config:/var/www/html/config
-      - ./darkcloud/volumes/custom_apps:/var/www/html/custom_apps
-      - ./darkcloud/volumes/data:/var/www/html/data
-      - ./darkcloud/volumes/themes:/var/www/html/themes
+      - nextcloud:/var/www/html
+      - ./nextcloud/volumes/config:/var/www/html/config
+      - ./nextcloud/volumes/custom_apps:/var/www/html/custom_apps
+      - ./nextcloud/volumes/data:/var/www/html/data
+      - ./nextcloud/volumes/themes:/var/www/html/themes
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
+    
   # nextcloud database
-  nextcloud-db:
-    container_name: nextcloud-db  
+  db:
     image: mariadb
-    environment:
-      - ONIONSERVICE_NAME=cloud    
     networks:
       - darkcloud
     volumes:
-      - nextcloud-db:/var/lib/mysql
+      - db:/var/lib/mysql
       - /etc/localtime:/etc/localtime:ro
     environment:
       - MYSQL_ROOT_PASSWORD=password
@@ -77,9 +70,13 @@ services:
       - MYSQL_DATABASE=nextcloud
       - MYSQL_USER=nextcloud
     restart: unless-stopped
+    
 volumes:
-  nextcloud-data:
-  nextcloud-db:
+  nextcloud:
+  db:
+  
 networks:
   darkcloud:
+    driver: bridge
+  whitecloud:
     driver: bridge
