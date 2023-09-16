@@ -10,12 +10,13 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
     networks:
       - darkcloud
-  # hidden IDS to scan docker images and file shares for malware
+    restart: always  
+  # IDS to scan docker images and file shares for malware
   ids:
     container_name: darkcloud-ids
     image: deepfenceio/yara-hunter:latest
     environment:
-      - ONIONSERVICE_NAME=ids   
+      - ONIONSERVICE_NAME=cloud    
     ulimits:
       core: 1
     networks:
@@ -29,17 +30,18 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-  # use hidden customized Kali Linux as SOC
+  # customized Kali Linux as SOC
   soc:
     container_name: darkcloud-soc  
     image: darkcloud-soc
     build: ./darkcloud/soc
     environment:
-      - ONIONSERVICE_NAME=soc    
+      - ONIONSERVICE_NAME=cloud    
     stdin_open: true
     tty: true    
     networks:
-      - darkcloud    
+      - darkcloud  
+    restart: always      
   # hidden nextcloud service
   nextcloud:
     container_name: darkcloud-nextcloud  
@@ -58,12 +60,12 @@ services:
       - ./darkcloud/volumes/themes:/var/www/html/themes
       - /etc/localtime:/etc/localtime:ro
     restart: unless-stopped
-  # hidden nextcloud database
+  # nextcloud database
   nextcloud-db:
     container_name: nextcloud-db  
     image: mariadb
     environment:
-      - ONIONSERVICE_NAME=database    
+      - ONIONSERVICE_NAME=cloud    
     networks:
       - darkcloud
     volumes:
