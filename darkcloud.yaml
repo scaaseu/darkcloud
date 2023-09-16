@@ -29,7 +29,7 @@ services:
       driver: "json-file"
       options:
         max-size: "1g"
-  # use customized Kali Linux as SOC
+  # use hidden customized Kali Linux as SOC
   darkcloud-soc:
     container_name: darkcloud-soc  
     image: darkcloud-soc
@@ -37,7 +37,9 @@ services:
     environment:
       - ONIONSERVICE_NAME=darkcloud-soc    
     stdin_open: true
-    tty: true      
+    tty: true    
+    networks:
+      - darkcloud    
   # hidden nextcloud service
   darkcloud:
     image: nextcloud:apache
