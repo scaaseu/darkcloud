@@ -18,7 +18,9 @@ services:
     ulimits:
       core: 1
     networks:
-      - whitecloud      
+      - whitecloud   
+    ports:
+      - 8011:8011
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     entrypoint: /home/deepfence/usr/YaRadare
