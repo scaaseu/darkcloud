@@ -4,6 +4,7 @@ services:
   # docker-gen identifies by reading the environment variable ONIONSERVICE_NAME   
   # what services should be added to the list of hidden onion services in torrc
   onionize:
+    container_name: darkcloud-onionize
     image: torservers/onionize
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
